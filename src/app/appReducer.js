@@ -16,6 +16,15 @@ export default function appReducer(state, action) {
         ...state,
         messages: [...state.messages, ...action.messages],
         waitingForReply: false,
+        scrollToBottom: true,
+      };
+    case "delete_message":
+      return {
+        ...state,
+        messages: [
+          ...state.messages.slice(0, action.i),
+          ...state.messages.slice(action.i + 1),
+        ],
       };
     case "add_actors":
       return {

@@ -233,6 +233,9 @@ export default function App() {
                         key={i}
                         backgroundColor={color}
                         message={message}
+                        onDelete={() => {
+                          dispatch({ type: "delete_message", i });
+                        }}
                       />
                     );
                   })}
