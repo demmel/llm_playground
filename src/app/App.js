@@ -57,6 +57,7 @@ const useStyles = createUseStyles({
   rightColumn: {
     display: "flex",
     flexDirection: "column",
+    justifyContent: "space-between",
     flexBasis: 400,
     flexGrow: 0,
     flexShrink: 0,
@@ -90,6 +91,10 @@ const useStyles = createUseStyles({
     width: "100%",
   },
 });
+
+function constructPrompt(messages) {
+  return messages.join("\n") + "\n";
+}
 
 export default function App() {
   const styles = useStyles();
@@ -197,7 +202,7 @@ export default function App() {
     }
     sendPrompt({
       hfToken: state.hfToken,
-      messages: state.messages,
+      prompt: constructPrompt(state.messages),
     }).then((response) => {
       const messages = unpackResponse(response, state.actors);
       addActors(messages);
@@ -269,33 +274,40 @@ export default function App() {
           </div>
         </div>
         <div className={styles.rightColumn}>
-          <div className={styles.label}>Hugging Face Token</div>
-          <Well>
-            <input
-              className={styles.oneLineUnput}
-              type="text"
-              value={state.hfToken}
-              onChange={(e) =>
-                dispatch({ type: "update_hf_token", token: e.target.value })
-              }
-            />
-          </Well>
-          <div className={styles.labelFollowing}>Actors</div>
-          {Object.values(state.actors).map(({ name, color, stop }) => (
-            <ActorSettingsItem
-              key={name}
-              name={name}
-              color={color}
-              stop={stop}
-              setStop={(stop) =>
-                dispatch({
-                  type: "set_actor_props",
-                  actor: name,
-                  props: { name, color, stop },
-                })
-              }
-            />
-          ))}
+          <div>
+            <div className={styles.label}>Actors</div>
+            {Object.values(state.actors).map(({ name, color, stop }) => (
+              <ActorSettingsItem
+                key={name}
+                name={name}
+                color={color}
+                stop={stop}
+                setStop={(stop) =>
+                  dispatch({
+                    type: "set_actor_props",
+                    actor: name,
+                    props: { name, color, stop },
+                  })
+                }
+              />
+            ))}
+          </div>
+          <div>
+            <div className={styles.label}>
+              Prompt Length: {constructPrompt(state.messages).length}
+            </div>
+            <div className={styles.labelFollowing}>Hugging Face Token</div>
+            <Well>
+              <input
+                className={styles.oneLineUnput}
+                type="text"
+                value={state.hfToken}
+                onChange={(e) =>
+                  dispatch({ type: "update_hf_token", token: e.target.value })
+                }
+              />
+            </Well>
+          </div>
         </div>
       </div>
     </div>

@@ -1,6 +1,4 @@
-export default async function sendPrompt({ hfToken, messages }) {
-  const prompt = messages.join("\n") + "\n";
-
+export default async function sendPrompt({ hfToken, prompt }) {
   const response = await fetch(
     "https://api-inference.huggingface.co/models/bigscience/bloom",
     {
