@@ -4,6 +4,8 @@ import appReducer from "./appReducer";
 import Composer from "./Composer";
 import sendPrompt from "./sendPrompt";
 import Well from "./Well";
+import Message from "./Message";
+import ActorSettingsItem from "./ActorSettingsItem";
 
 const useStyles = createUseStyles({
   root: {
@@ -72,16 +74,6 @@ const useStyles = createUseStyles({
     width: "100%",
     paddingRight: 6,
   },
-  message: {
-    whiteSpace: "pre-wrap",
-    backgroundColor: "#121212",
-    borderRadius: 16,
-    padding: 8,
-    marginBottom: 8,
-    "&:last-child": {
-      marginBottom: 0,
-    },
-  },
   actor: {
     display: "flex",
     justifyContent: "space-between",
@@ -108,25 +100,79 @@ export default function App() {
   });
   const bottomRef = useRef(null);
 
+  const getActorForMessage = useCallback((message) => {
+    const messageActorMatch = message.match(/^(.+):/);
+    const actor = messageActorMatch != null ? messageActorMatch[1] : null;
+    return actor;
+  }, []);
+
   const addActors = useCallback(
     (messages) => {
       const actorsDuplicative = messages
-        .map((m) => m.match(/^(.+):/))
-        .filter((m) => m != null)
-        .map((m) => m[1])
-        .filter((m) => !Object.keys(state.actors).includes(m));
+        .map((m) => getActorForMessage(m))
+        .filter((a) => a != null)
+        .filter((a) => state.actors[a] == null);
       const actors = new Set(actorsDuplicative);
       if (actors.size === 0) {
         return;
       }
-      dispatch({ type: "add_actors", actors });
+
+      const actorColors = [
+        "#1445a7",
+        "#872323",
+        "#135723",
+        "#675708",
+        "#451387",
+        "#131367",
+      ];
+
+      let colorIndex = Object.keys(state.actors).length;
+      const newActors = [...actors].reduce((newActors, name) => {
+        newActors[name] = {
+          name,
+          stop: true,
+          color: actorColors[colorIndex++],
+        };
+        return newActors;
+      }, {});
+
+      dispatch({ type: "add_actors", actors: newActors });
     },
-    [state.actors]
+    [getActorForMessage, state.actors]
   );
 
   useEffect(() => {
     localStorage.setItem("hfToken", state.hfToken);
   }, [state.hfToken]);
+
+  function unpackResponse(response, actors) {
+    let prev = response;
+    let next = response;
+    do {
+      // Remove repeated messages and phrases.
+      prev = next;
+      next = prev.replaceAll(/([\s\S]{2,}?)\1+/g, "$1");
+    } while (prev !== next);
+
+    const allMessages = next
+      .split("\n")
+      .map((m) => m.trim())
+      .filter((m) => m !== "");
+
+    const stopActors = Object.entries(actors)
+      .filter(([_, props]) => props.stop)
+      .map(([name, _]) => name);
+    const stopIndex = allMessages.findIndex(
+      (m) => stopActors.findIndex((a) => m.startsWith(`${a}:`)) !== -1
+    );
+
+    const messages = allMessages.slice(
+      0,
+      stopIndex !== -1 ? stopIndex : allMessages.length
+    );
+
+    return messages;
+  }
 
   useEffect(() => {
     if (!state.waitingForReply) {
@@ -136,30 +182,7 @@ export default function App() {
       hfToken: state.hfToken,
       messages: state.messages,
     }).then((response) => {
-      let prev = response;
-      let next = response;
-      do {
-        // Remove repeated messages and phrases.
-        prev = next;
-        next = prev.replaceAll(/(.{2,}?)\1+/g, "$1");
-      } while (prev !== next);
-
-      const allMessages = next
-        .split("\n")
-        .map((m) => m.trim())
-        .filter((m) => m !== "");
-      const stopActors = Object.entries(state.actors)
-        .filter(([_, props]) => props.stopAt)
-        .map(([name, _]) => name);
-      const stopIndex = allMessages.findIndex(
-        (m) => stopActors.findIndex((a) => m.startsWith(`${a}:`)) !== -1
-      );
-
-      const messages = allMessages.slice(
-        0,
-        stopIndex !== -1 ? stopIndex : allMessages.length
-      );
-
+      const messages = unpackResponse(response, state.actors);
       addActors(messages);
       dispatch({ type: "receive_replies", messages });
     });
@@ -183,11 +206,17 @@ export default function App() {
             <Well height="100%">
               <div className={styles.chatAreaScroll}>
                 <div>
-                  {state.messages.map((message, i) => (
-                    <div key={i} className={styles.message}>
-                      {message}
-                    </div>
-                  ))}
+                  {state.messages.map((message, i) => {
+                    const actor = getActorForMessage(message);
+                    const color = state.actors[actor]?.color ?? "#121212";
+                    return (
+                      <Message
+                        key={i}
+                        backgroundColor={color}
+                        message={message}
+                      />
+                    );
+                  })}
                 </div>
                 <div ref={bottomRef} />
               </div>
@@ -230,24 +259,20 @@ export default function App() {
             />
           </Well>
           <div className={styles.labelFollowing}>Actors</div>
-          {Object.entries(state.actors).map(([name, props]) => (
-            <div key={name} className={styles.actor}>
-              <span>{name}</span>
-              <span>
-                Stop?:
-                <input
-                  type="checkbox"
-                  checked={props.stopAt}
-                  onChange={(e) => {
-                    dispatch({
-                      type: "set_actor_props",
-                      actor: name,
-                      props: { ...props, stopAt: e.target.checked },
-                    });
-                  }}
-                />
-              </span>
-            </div>
+          {Object.values(state.actors).map(({ name, color, stop }) => (
+            <ActorSettingsItem
+              key={name}
+              name={name}
+              color={color}
+              stop={stop}
+              setStop={(stop) =>
+                dispatch({
+                  type: "set_actor_props",
+                  actor: name,
+                  props: { name, color, stop },
+                })
+              }
+            />
           ))}
         </div>
       </div>

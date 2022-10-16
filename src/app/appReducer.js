@@ -18,13 +18,12 @@ export default function appReducer(state, action) {
         waitingForReply: false,
       };
     case "add_actors":
-      const actors = { ...state.actors };
-      for (const name of action.actors) {
-        actors[name] = { stopAt: true };
-      }
       return {
         ...state,
-        actors,
+        actors: {
+          ...state.actors,
+          ...action.actors,
+        },
       };
     case "set_actor_props":
       return {
