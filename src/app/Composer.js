@@ -18,7 +18,7 @@ const useStyles = createUseStyles({
   },
 });
 
-export default function Composer() {
+export default function Composer({ onSubmit }) {
   const styles = useStyles();
   const ref = useRef(null);
   const [rows, setRows] = useState(1);
@@ -47,26 +47,28 @@ export default function Composer() {
     [rows]
   );
 
-  const onSubmit = useCallback(
+  const onSubmitWrapper = useCallback(
     function (e) {
       e.preventDefault();
 
       if (text === "") {
         return;
       }
+
+      onSubmit(text);
       clearComposer();
     },
-    [clearComposer, text]
+    [clearComposer, onSubmit, text]
   );
 
   const onKeyDown = useCallback(
     function (event) {
-      if (event.key === "Enter") {
+      if (event.key === "Enter" && !event.getModifierState("Shift")) {
         event.preventDefault();
-        onSubmit(event);
+        onSubmitWrapper(event);
       }
     },
-    [onSubmit]
+    [onSubmitWrapper]
   );
 
   return (

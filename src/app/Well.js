@@ -5,7 +5,7 @@ const useStyles = createUseStyles({
   root: {
     padding: 8,
     backgroundColor: "#080808",
-    boxShadow: "inset 0 0 5px #191919",
+    boxShadow: "inset 0 0 2px #191919",
     borderRadius: 16,
     width: ({ width = "auto" }) => width,
     height: ({ height = "auto" }) => height,
