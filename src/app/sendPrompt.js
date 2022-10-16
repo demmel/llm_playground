@@ -13,11 +13,11 @@ export default async function sendPrompt({ hfToken, messages }) {
       body: JSON.stringify({
         inputs: prompt,
         parameters: {
-          top_k: 2,
+          top_k: 50,
           top_p: 0.9,
-          temperature: 90.0,
+          temperature: 0.9,
           max_new_tokens: 150,
-          repetition_penalty: 80.0,
+          repetition_penalty: 60.0,
           do_sample: true,
           return_full_text: false,
         },

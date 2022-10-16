@@ -6,6 +6,7 @@ import sendPrompt from "./sendPrompt";
 import Well from "./Well";
 import Message from "./Message";
 import ActorSettingsItem from "./ActorSettingsItem";
+import nlp from "compromise";
 
 const useStyles = createUseStyles({
   root: {
@@ -101,18 +102,26 @@ export default function App() {
   const bottomRef = useRef(null);
 
   const getActorForMessage = useCallback((message) => {
-    const messageActorMatch = message.match(/^(.+):/);
-    const actor = messageActorMatch != null ? messageActorMatch[1] : null;
+    const normalized = nlp(message)
+      .people()
+      .normalize("heavy")
+      .text()
+      .replaceAll(/[.?!,/#!$%^&*;:{}=\-_`~()]/g, "")
+      .split(" ")[0];
+    const actor = normalized.charAt(0).toUpperCase() + normalized.slice(1);
     return actor;
   }, []);
 
   const addActors = useCallback(
     (messages) => {
-      const actorsDuplicative = messages
-        .map((m) => getActorForMessage(m))
-        .filter((a) => a != null)
-        .filter((a) => state.actors[a] == null);
-      const actors = new Set(actorsDuplicative);
+      const actors = new Set(
+        messages.map((m) => getActorForMessage(m)).filter((a) => a !== "")
+      );
+
+      for (const actor of Object.keys(state.actors)) {
+        actors.delete(actor);
+      }
+
       if (actors.size === 0) {
         return;
       }
@@ -130,7 +139,9 @@ export default function App() {
       const newActors = [...actors].reduce((newActors, name) => {
         newActors[name] = {
           name,
-          stop: true,
+          stop:
+            Object.keys(state.actors).length === 0 &&
+            Object.keys(newActors).length === 0,
           color: actorColors[colorIndex++],
         };
         return newActors;
@@ -145,34 +156,40 @@ export default function App() {
     localStorage.setItem("hfToken", state.hfToken);
   }, [state.hfToken]);
 
-  function unpackResponse(response, actors) {
-    let prev = response;
-    let next = response;
-    do {
-      // Remove repeated messages and phrases.
-      prev = next;
-      next = prev.replaceAll(/([\s\S]{2,}?)\1+/g, "$1");
-    } while (prev !== next);
+  const unpackResponse = useCallback(
+    (response, actors) => {
+      let prev = response;
+      let next = response;
+      do {
+        // Remove repeated messages and phrases.
+        prev = next;
+        next = prev.replaceAll(/([\s\S]{2,}?)\1+/g, "$1");
+      } while (prev !== next);
 
-    const allMessages = next
-      .split("\n")
-      .map((m) => m.trim())
-      .filter((m) => m !== "");
+      const allMessages = next
+        .split("\n")
+        .map((m) => m.trim())
+        .filter((m) => m !== "");
 
-    const stopActors = Object.entries(actors)
-      .filter(([_, props]) => props.stop)
-      .map(([name, _]) => name);
-    const stopIndex = allMessages.findIndex(
-      (m) => stopActors.findIndex((a) => m.startsWith(`${a}:`)) !== -1
-    );
+      const stopActors = new Set(
+        Object.entries(actors)
+          .filter(([_, props]) => props.stop)
+          .map(([name, _]) => name)
+      );
 
-    const messages = allMessages.slice(
-      0,
-      stopIndex !== -1 ? stopIndex : allMessages.length
-    );
+      const stopIndex = allMessages.findIndex((m) =>
+        stopActors.has(getActorForMessage(m))
+      );
 
-    return messages;
-  }
+      const messages = allMessages.slice(
+        0,
+        stopIndex !== -1 ? stopIndex : allMessages.length
+      );
+
+      return messages;
+    },
+    [getActorForMessage]
+  );
 
   useEffect(() => {
     if (!state.waitingForReply) {
@@ -186,12 +203,14 @@ export default function App() {
       addActors(messages);
       dispatch({ type: "receive_replies", messages });
     });
+    // dispatch({ type: "receive_replies", messages: ["Woe"] });
   }, [
     addActors,
     state.actors,
     state.hfToken,
     state.messages,
     state.waitingForReply,
+    unpackResponse,
   ]);
 
   useEffect(() => {
