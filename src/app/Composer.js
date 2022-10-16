@@ -4,9 +4,11 @@ import { createUseStyles } from "react-jss";
 import Well from "./Well";
 
 const TEXT_AREA_LINE_HEIGHT = 16;
+const DISABLED_COLOR = "#442222";
 
 const useStyles = createUseStyles({
   input: {
+    alignSelf: "center",
     width: "100%",
     backgroundColor: "#080808",
     color: "#FFFFFF",
@@ -15,10 +17,13 @@ const useStyles = createUseStyles({
     lineHeight: 1,
     outline: "none",
     resize: "none",
+    "&:disabled": {
+      backgroundColor: DISABLED_COLOR,
+    },
   },
 });
 
-export default function Composer({ onSubmit }) {
+export default function Composer({ placeholder, disabled, onSubmit }) {
   const styles = useStyles();
   const ref = useRef(null);
   const [rows, setRows] = useState(1);
@@ -72,7 +77,7 @@ export default function Composer({ onSubmit }) {
   );
 
   return (
-    <Well>
+    <Well backgroundColor={disabled ? DISABLED_COLOR : undefined}>
       <textarea
         ref={ref}
         rows={rows}
@@ -81,6 +86,8 @@ export default function Composer({ onSubmit }) {
         value={text}
         onChange={onChange}
         onKeyDown={onKeyDown}
+        disabled={disabled}
+        placeholder={placeholder}
       />
     </Well>
   );
