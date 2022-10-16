@@ -1,5 +1,6 @@
 import { useEffect, useReducer, useRef, useCallback } from "react";
 import { createUseStyles } from "react-jss";
+import appReducer from "./appReducer";
 import Composer from "./Composer";
 import sendPrompt from "./sendPrompt";
 import Well from "./Well";
@@ -88,6 +89,7 @@ const useStyles = createUseStyles({
     boxShadow: "inset 0 0 2px rgba(64,64,64,0.3)",
     borderRadius: 16,
     padding: 8,
+    marginBottom: 8,
   },
   composer: {
     flexGrow: 0,
@@ -96,52 +98,9 @@ const useStyles = createUseStyles({
   },
 });
 
-function reducer(state, action) {
-  switch (action.type) {
-    case "update_hf_token":
-      return {
-        ...state,
-        hfToken: action.token,
-      };
-    case "send_prompt":
-      return {
-        ...state,
-        messages: [...state.messages, ...action.messages],
-        waitingForReply: true,
-      };
-    case "receive_replies":
-      return {
-        ...state,
-        messages: [...state.messages, ...action.messages],
-        waitingForReply: false,
-      };
-    case "add_actors":
-      const actors = { ...state.actors };
-      for (const name of action.actors) {
-        actors[name] = { stopAt: true };
-      }
-      return {
-        ...state,
-        actors,
-      };
-    case "set_actor_props":
-      return {
-        ...state,
-        actors: {
-          ...state.actors,
-          [action.actor]: action.props,
-        },
-      };
-    default:
-      throw new Error(
-        `Action Type: ${action.type} does not have a handler defined`
-      );
-  }
-}
-
 export default function App() {
   const styles = useStyles();
-  const [state, dispatch] = useReducer(reducer, {
+  const [state, dispatch] = useReducer(appReducer, {
     hfToken: localStorage.getItem("hfToken") ?? "",
     actors: {},
     messages: [],
@@ -223,11 +182,13 @@ export default function App() {
           <div className={styles.chatArea}>
             <Well height="100%">
               <div className={styles.chatAreaScroll}>
-                {state.messages.map((message, i) => (
-                  <div key={i} className={styles.message}>
-                    {message}
-                  </div>
-                ))}
+                <div>
+                  {state.messages.map((message, i) => (
+                    <div key={i} className={styles.message}>
+                      {message}
+                    </div>
+                  ))}
+                </div>
                 <div ref={bottomRef} />
               </div>
             </Well>
