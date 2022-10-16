@@ -55,11 +55,6 @@ export default function Composer({ placeholder, disabled, onSubmit }) {
   const onSubmitWrapper = useCallback(
     function (e) {
       e.preventDefault();
-
-      if (text === "") {
-        return;
-      }
-
       onSubmit(text);
       clearComposer();
     },

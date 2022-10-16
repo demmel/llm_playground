@@ -16,8 +16,9 @@ export default async function sendPrompt({ hfToken, messages }) {
           top_k: 1,
           top_p: 1.0,
           temperature: 90.0,
-          max_new_tokens: 128,
-          repetition_penalty: 60.0,
+          max_new_tokens: 150,
+          repetition_penalty: 80.0,
+          do_sample: true,
           return_full_text: false,
         },
         options: {

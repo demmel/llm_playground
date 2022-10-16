@@ -24,13 +24,15 @@ const useStyles = createUseStyles({
   },
   label: {
     marginLeft: 8,
-    fontSize: 18,
+    fontSize: 24,
+    fontWeight: "bold",
     marginBottom: 8,
   },
   labelFollowing: {
     marginTop: 12,
     marginLeft: 8,
-    fontSize: 18,
+    fontSize: 24,
+    fontWeight: "bold",
     marginBottom: 8,
   },
   oneLineUnput: {
@@ -175,9 +177,15 @@ export default function App() {
       hfToken: state.hfToken,
       messages: state.messages,
     }).then((response) => {
-      const allMessages = response
+      let prev = response;
+      let next = response;
+      do {
         // Remove repeated messages and phrases.
-        .replace(/(.{2,}?)\1+/, "$1")
+        prev = next;
+        next = prev.replaceAll(/(.{2,}?)\1+/g, "$1");
+      } while (prev !== next);
+
+      const allMessages = next
         .split("\n")
         .map((m) => m.trim())
         .filter((m) => m !== "");
@@ -241,7 +249,7 @@ export default function App() {
                   : null
               }
               onSubmit={(text) => {
-                const messages = text.split("\n");
+                const messages = text.split("\n").filter((m) => m !== "");
                 addActors(messages);
                 dispatch({ type: "send_prompt", messages });
               }}
