@@ -263,11 +263,11 @@ export default function App() {
               }
               placeholder={
                 state.hfToken == null || state.hfToken === ""
-                  ? "You need to enter you Hugging Face Token first"
+                  ? "You need to enter you Hugging Face Token first."
                   : state.waitingForReply
                   ? "Waiting for a reply..."
                   : state.messages.length === 0
-                  ? "Set the scene"
+                  ? "Set the scene.  What's the setting?  Who's involed?  What are their motivations?"
                   : null
               }
               onSubmit={(text) => {

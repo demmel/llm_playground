@@ -4,7 +4,7 @@ import { createUseStyles } from "react-jss";
 import Well from "./Well";
 
 const TEXT_AREA_LINE_HEIGHT = 16;
-const DISABLED_COLOR = "#442222";
+const DISABLED_COLOR = "#333333";
 
 const useStyles = createUseStyles({
   input: {
