@@ -10,6 +10,7 @@ export default function appReducer(state, action) {
         ...state,
         messages: [...state.messages, ...action.messages],
         waitingForReply: true,
+        scrollToBottom: true,
       };
     case "receive_replies":
       return {
@@ -17,6 +18,11 @@ export default function appReducer(state, action) {
         messages: [...state.messages, ...action.messages],
         waitingForReply: false,
         scrollToBottom: true,
+      };
+    case "finish_scroll":
+      return {
+        ...state,
+        scrollToBottom: false,
       };
     case "delete_message":
       return {

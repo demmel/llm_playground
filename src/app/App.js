@@ -103,6 +103,7 @@ export default function App() {
     actors: {},
     messages: [],
     waitingForReply: false,
+    scrollToBottom: false,
   });
   const bottomRef = useRef(null);
 
@@ -219,8 +220,12 @@ export default function App() {
   ]);
 
   useEffect(() => {
+    if (!state.scrollToBottom) {
+      return;
+    }
+    dispatch({ type: "finish_scroll" });
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [state.messages]);
+  }, [state.messages, state.scrollToBottom]);
 
   return (
     <div className={styles.root}>
