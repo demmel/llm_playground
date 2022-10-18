@@ -261,7 +261,9 @@ export default function App() {
             ))}
           </div>
           <div>
-            <div className={styles.label}>Prompt Length: {prompt.length}</div>
+            <div className={styles.label}>
+              Prompt Length: {state.prompt.length}
+            </div>
             <button
               className={styles.button}
               onClick={() => navigator.clipboard.writeText(prompt)}

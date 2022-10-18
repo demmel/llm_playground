@@ -13,7 +13,7 @@ const useStyles = createUseStyles({
     backgroundColor: "#080808",
     color: "#FFFFFF",
     border: "none",
-    fontSize: 16,
+    fontSize: 24,
     lineHeight: 1,
     outline: "none",
     resize: "none",
