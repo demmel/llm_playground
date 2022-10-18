@@ -24,6 +24,7 @@ const useStyles = createUseStyles({
 });
 
 export default function Composer({
+  ref,
   text,
   onChange,
   placeholder,
@@ -45,6 +46,7 @@ export default function Composer({
   return (
     <Well height="100%" backgroundColor={disabled ? DISABLED_COLOR : undefined}>
       <textarea
+        ref={ref}
         autoFocus={true}
         className={styles.input}
         value={text}
