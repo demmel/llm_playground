@@ -8,14 +8,14 @@ export default function appReducer(state, action) {
     case "send_prompt":
       return {
         ...state,
-        messages: [...state.messages, ...action.messages],
+        prompt: action.prompt,
         waitingForReply: true,
         scrollToBottom: true,
       };
     case "receive_replies":
       return {
         ...state,
-        messages: [...state.messages, ...action.messages],
+        prompt: action.prompt,
         waitingForReply: false,
         scrollToBottom: true,
       };
@@ -23,14 +23,6 @@ export default function appReducer(state, action) {
       return {
         ...state,
         scrollToBottom: false,
-      };
-    case "delete_message":
-      return {
-        ...state,
-        messages: [
-          ...state.messages.slice(0, action.i),
-          ...state.messages.slice(action.i + 1),
-        ],
       };
     case "add_actors":
       return {
@@ -47,6 +39,11 @@ export default function appReducer(state, action) {
           ...state.actors,
           [action.actor]: action.props,
         },
+      };
+    case "set_prompt":
+      return {
+        ...state,
+        prompt: action.prompt,
       };
     default:
       throw new Error(

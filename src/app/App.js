@@ -1,11 +1,10 @@
-import { useEffect, useReducer, useRef, useCallback, useMemo } from "react";
+import { useEffect, useReducer, useRef, useCallback } from "react";
 import { createUseStyles } from "react-jss";
 import appReducer from "./appReducer";
 import Composer from "./Composer";
 import sendChatPrompt from "./sendChatPrompt";
 import sendSummarizationPrompt from "./sendSummarizationPrompt";
 import Well from "./Well";
-import Message from "./Message";
 import ActorSettingsItem from "./ActorSettingsItem";
 import nlp from "compromise";
 
@@ -106,19 +105,15 @@ const useStyles = createUseStyles({
   },
 });
 
-function constructPrompt(messages) {
-  return messages.join("\n") + "\n";
-}
-
-function getActorForMessage(message) {
-  const normalized = nlp(message)
+function getActorsForPrompt(prompt) {
+  return nlp(prompt)
     .people()
     .normalize("heavy")
     .text()
-    .replaceAll(/[.?!,/#!$%^&*;:{}=\-_`~()]/g, "")
-    .split(" ")[0];
-  const actor = normalized.charAt(0).toUpperCase() + normalized.slice(1);
-  return actor;
+    .replaceAll(/[.?!,/#!$%^&*;:{}=\-_`~()"']/g, "")
+    .split(" ")
+    .filter((a) => a !== "")
+    .map((a) => a.charAt(0).toUpperCase() + a.slice(1));
 }
 
 function unpackResponse(response, actors) {
@@ -130,27 +125,13 @@ function unpackResponse(response, actors) {
     next = prev.replaceAll(/([\s\S]{2,}?)\1+/g, "$1");
   } while (prev !== next);
 
-  const allMessages = next
-    .split("\n")
-    .map((m) => m.trim())
-    .filter((m) => m !== "");
+  // const stopActors = new Set(
+  //   Object.entries(actors)
+  //     .filter(([_, props]) => props.stop)
+  //     .map(([name, _]) => name)
+  // );
 
-  const stopActors = new Set(
-    Object.entries(actors)
-      .filter(([_, props]) => props.stop)
-      .map(([name, _]) => name)
-  );
-
-  const stopIndex = allMessages.findIndex((m) =>
-    stopActors.has(getActorForMessage(m))
-  );
-
-  const messages = allMessages.slice(
-    0,
-    stopIndex !== -1 ? stopIndex : allMessages.length
-  );
-
-  return messages;
+  return response;
 }
 
 export default function App() {
@@ -158,21 +139,15 @@ export default function App() {
   const [state, dispatch] = useReducer(appReducer, {
     hfToken: localStorage.getItem("hfToken") ?? "",
     actors: {},
-    messages: [],
+    prompt: "",
     waitingForReply: false,
     scrollToBottom: false,
   });
   const bottomRef = useRef(null);
-  const prompt = useMemo(
-    () => constructPrompt(state.messages),
-    [state.messages]
-  );
 
   const addActors = useCallback(
-    (messages) => {
-      const actors = new Set(
-        messages.map((m) => getActorForMessage(m)).filter((a) => a !== "")
-      );
+    (prompt) => {
+      const actors = new Set(getActorsForPrompt(prompt));
 
       for (const actor of Object.keys(state.actors)) {
         actors.delete(actor);
@@ -218,18 +193,17 @@ export default function App() {
     }
     sendChatPrompt({
       hfToken: state.hfToken,
-      prompt,
+      prompt: state.prompt,
     }).then((response) => {
-      const messages = unpackResponse(response, state.actors);
-      addActors(messages);
-      dispatch({ type: "receive_replies", messages });
+      const addendum = unpackResponse(response, state.actors);
+      addActors(addendum);
+      dispatch({ type: "receive_replies", prompt: state.prompt + addendum });
     });
   }, [
     addActors,
-    prompt,
     state.actors,
     state.hfToken,
-    state.messages,
+    state.prompt,
     state.waitingForReply,
   ]);
 
@@ -245,52 +219,27 @@ export default function App() {
     <div className={styles.root}>
       <div className={styles.columns}>
         <div className={styles.mainContent}>
-          <div className={styles.chatArea}>
-            <Well height="100%">
-              <div className={styles.chatAreaScroll}>
-                <div>
-                  {state.messages.map((message, i) => {
-                    const actor = getActorForMessage(message);
-                    const color = state.actors[actor]?.color ?? "#121212";
-                    return (
-                      <Message
-                        key={i}
-                        backgroundColor={color}
-                        message={message}
-                        onDelete={() => {
-                          dispatch({ type: "delete_message", i });
-                        }}
-                      />
-                    );
-                  })}
-                </div>
-                <div ref={bottomRef} />
-              </div>
-            </Well>
-          </div>
-          <div className={styles.composer}>
-            <Composer
-              disabled={
-                state.waitingForReply ||
-                state.hfToken == null ||
-                state.hfToken === ""
-              }
-              placeholder={
-                state.hfToken == null || state.hfToken === ""
-                  ? "You need to enter you Hugging Face Token first."
-                  : state.waitingForReply
-                  ? "Waiting for a reply..."
-                  : state.messages.length === 0
-                  ? "Set the scene.  What's the setting?  Who's involed?  What are their motivations?"
-                  : "What happens next?"
-              }
-              onSubmit={(text) => {
-                const messages = text.split("\n").filter((m) => m !== "");
-                addActors(messages);
-                dispatch({ type: "send_prompt", messages });
-              }}
-            />
-          </div>
+          <Composer
+            text={state.prompt}
+            onChange={(e) => {
+              const prompt = e.target.value;
+              dispatch({
+                type: "set_prompt",
+                prompt,
+              });
+            }}
+            disabled={state.waitingForReply || state.hfToken === ""}
+            placeholder={
+              state.hfToken === ""
+                ? "You need to enter you Hugging Face Token first."
+                : "Set the scene.  What's the setting?  Who's involed?  What are their motivations?"
+            }
+            onSubmit={(prompt) => {
+              console.log(prompt);
+              addActors(prompt);
+              dispatch({ type: "send_prompt", prompt });
+            }}
+          />
         </div>
         <div className={styles.rightColumn}>
           <div>
