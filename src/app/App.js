@@ -118,20 +118,29 @@ function getActorsForPrompt(prompt) {
 
 function unpackResponse(response, actors) {
   let prev = response;
-  let next = response;
+  let filtered = response;
   do {
     // Remove repeated messages and phrases.
-    prev = next;
-    next = prev.replaceAll(/([\s\S]{2,}?)\1+/g, "$1");
-  } while (prev !== next);
+    prev = filtered;
+    filtered = prev.replaceAll(/([\s\S]{2,}?)\1+/g, "$1");
+  } while (prev !== filtered);
 
-  // const stopActors = new Set(
-  //   Object.entries(actors)
-  //     .filter(([_, props]) => props.stop)
-  //     .map(([name, _]) => name)
-  // );
+  const stopActors = new Set(
+    Object.entries(actors)
+      .filter(([_, props]) => props.stop)
+      .map(([name, _]) => name)
+  );
 
-  return response;
+  const min = [...stopActors]
+    .map((a) => filtered.search(`${a}:`))
+    .filter((i) => i > -1)
+    .reduce((a, b) => Math.min(a, b), Infinity);
+
+  if (min === Infinity) {
+    return response;
+  }
+
+  return response.slice(0, min);
 }
 
 export default function App() {
@@ -143,7 +152,7 @@ export default function App() {
     waitingForReply: false,
     scrollToBottom: false,
   });
-  const bottomRef = useRef(null);
+  const scrollRef = useRef(null);
 
   const addActors = useCallback(
     (prompt) => {
@@ -212,7 +221,9 @@ export default function App() {
       return;
     }
     dispatch({ type: "finish_scroll" });
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (scrollRef.current !== null) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
   }, [state.messages, state.scrollToBottom]);
 
   return (
@@ -220,6 +231,7 @@ export default function App() {
       <div className={styles.columns}>
         <div className={styles.mainContent}>
           <Composer
+            ref={scrollRef}
             text={state.prompt}
             onChange={(e) => {
               const prompt = e.target.value;
@@ -235,7 +247,6 @@ export default function App() {
                 : "Set the scene.  What's the setting?  Who's involed?  What are their motivations?"
             }
             onSubmit={(prompt) => {
-              console.log(prompt);
               addActors(prompt);
               dispatch({ type: "send_prompt", prompt });
             }}
@@ -275,7 +286,7 @@ export default function App() {
               onClick={() =>
                 sendSummarizationPrompt({
                   hfToken: state.hfToken,
-                  prompt,
+                  prompt: state.prompt,
                 }).then((response) => {
                   navigator.clipboard.writeText(response);
                   window.alert("Copied summary to clipboard.");
