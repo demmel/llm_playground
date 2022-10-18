@@ -1,8 +1,9 @@
-import { useEffect, useReducer, useRef, useCallback } from "react";
+import { useEffect, useReducer, useRef, useCallback, useMemo } from "react";
 import { createUseStyles } from "react-jss";
 import appReducer from "./appReducer";
 import Composer from "./Composer";
-import sendPrompt from "./sendPrompt";
+import sendChatPrompt from "./sendChatPrompt";
+import sendSummarizationPrompt from "./sendSummarizationPrompt";
 import Well from "./Well";
 import Message from "./Message";
 import ActorSettingsItem from "./ActorSettingsItem";
@@ -90,10 +91,66 @@ const useStyles = createUseStyles({
     flexShrink: 0,
     width: "100%",
   },
+  button: {
+    border: 0,
+    height: 32,
+    borderRadius: 12,
+    backgroundColor: "#4D4D4D",
+    color: "#FFFFFF",
+    "&:hover": {
+      backgroundColor: "#606060",
+    },
+    "&:active": {
+      backgroundColor: "#303030",
+    },
+  },
 });
 
 function constructPrompt(messages) {
   return messages.join("\n") + "\n";
+}
+
+function getActorForMessage(message) {
+  const normalized = nlp(message)
+    .people()
+    .normalize("heavy")
+    .text()
+    .replaceAll(/[.?!,/#!$%^&*;:{}=\-_`~()]/g, "")
+    .split(" ")[0];
+  const actor = normalized.charAt(0).toUpperCase() + normalized.slice(1);
+  return actor;
+}
+
+function unpackResponse(response, actors) {
+  let prev = response;
+  let next = response;
+  do {
+    // Remove repeated messages and phrases.
+    prev = next;
+    next = prev.replaceAll(/([\s\S]{2,}?)\1+/g, "$1");
+  } while (prev !== next);
+
+  const allMessages = next
+    .split("\n")
+    .map((m) => m.trim())
+    .filter((m) => m !== "");
+
+  const stopActors = new Set(
+    Object.entries(actors)
+      .filter(([_, props]) => props.stop)
+      .map(([name, _]) => name)
+  );
+
+  const stopIndex = allMessages.findIndex((m) =>
+    stopActors.has(getActorForMessage(m))
+  );
+
+  const messages = allMessages.slice(
+    0,
+    stopIndex !== -1 ? stopIndex : allMessages.length
+  );
+
+  return messages;
 }
 
 export default function App() {
@@ -106,17 +163,10 @@ export default function App() {
     scrollToBottom: false,
   });
   const bottomRef = useRef(null);
-
-  const getActorForMessage = useCallback((message) => {
-    const normalized = nlp(message)
-      .people()
-      .normalize("heavy")
-      .text()
-      .replaceAll(/[.?!,/#!$%^&*;:{}=\-_`~()]/g, "")
-      .split(" ")[0];
-    const actor = normalized.charAt(0).toUpperCase() + normalized.slice(1);
-    return actor;
-  }, []);
+  const prompt = useMemo(
+    () => constructPrompt(state.messages),
+    [state.messages]
+  );
 
   const addActors = useCallback(
     (messages) => {
@@ -155,68 +205,32 @@ export default function App() {
 
       dispatch({ type: "add_actors", actors: newActors });
     },
-    [getActorForMessage, state.actors]
+    [state.actors]
   );
 
   useEffect(() => {
     localStorage.setItem("hfToken", state.hfToken);
   }, [state.hfToken]);
 
-  const unpackResponse = useCallback(
-    (response, actors) => {
-      let prev = response;
-      let next = response;
-      do {
-        // Remove repeated messages and phrases.
-        prev = next;
-        next = prev.replaceAll(/([\s\S]{2,}?)\1+/g, "$1");
-      } while (prev !== next);
-
-      const allMessages = next
-        .split("\n")
-        .map((m) => m.trim())
-        .filter((m) => m !== "");
-
-      const stopActors = new Set(
-        Object.entries(actors)
-          .filter(([_, props]) => props.stop)
-          .map(([name, _]) => name)
-      );
-
-      const stopIndex = allMessages.findIndex((m) =>
-        stopActors.has(getActorForMessage(m))
-      );
-
-      const messages = allMessages.slice(
-        0,
-        stopIndex !== -1 ? stopIndex : allMessages.length
-      );
-
-      return messages;
-    },
-    [getActorForMessage]
-  );
-
   useEffect(() => {
     if (!state.waitingForReply) {
       return;
     }
-    sendPrompt({
+    sendChatPrompt({
       hfToken: state.hfToken,
-      prompt: constructPrompt(state.messages),
+      prompt,
     }).then((response) => {
       const messages = unpackResponse(response, state.actors);
       addActors(messages);
       dispatch({ type: "receive_replies", messages });
     });
-    // dispatch({ type: "receive_replies", messages: ["Woe"] });
   }, [
     addActors,
+    prompt,
     state.actors,
     state.hfToken,
     state.messages,
     state.waitingForReply,
-    unpackResponse,
   ]);
 
   useEffect(() => {
@@ -268,7 +282,7 @@ export default function App() {
                   ? "Waiting for a reply..."
                   : state.messages.length === 0
                   ? "Set the scene.  What's the setting?  Who's involed?  What are their motivations?"
-                  : null
+                  : "What happens next?"
               }
               onSubmit={(text) => {
                 const messages = text.split("\n").filter((m) => m !== "");
@@ -298,9 +312,27 @@ export default function App() {
             ))}
           </div>
           <div>
-            <div className={styles.label}>
-              Prompt Length: {constructPrompt(state.messages).length}
-            </div>
+            <div className={styles.label}>Prompt Length: {prompt.length}</div>
+            <button
+              className={styles.button}
+              onClick={() => navigator.clipboard.writeText(prompt)}
+            >
+              Copy Prompt
+            </button>
+            <button
+              className={styles.button}
+              onClick={() =>
+                sendSummarizationPrompt({
+                  hfToken: state.hfToken,
+                  prompt,
+                }).then((response) => {
+                  navigator.clipboard.writeText(response);
+                  window.alert("Copied summary to clipboard.");
+                })
+              }
+            >
+              Summarize Conversation
+            </button>
             <div className={styles.labelFollowing}>Hugging Face Token</div>
             <Well>
               <input

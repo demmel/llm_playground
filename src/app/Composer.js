@@ -63,7 +63,7 @@ export default function Composer({ placeholder, disabled, onSubmit }) {
 
   const onKeyDown = useCallback(
     function (event) {
-      if (event.key === "Enter" && !event.getModifierState("Shift")) {
+      if (event.key === "Enter" && event.getModifierState("Shift")) {
         event.preventDefault();
         onSubmitWrapper(event);
       }
