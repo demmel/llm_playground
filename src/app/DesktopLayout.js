@@ -64,7 +64,12 @@ export default function DesktopLayout({
         />
       </div>
       <div className={styles.rightColumn}>
-        <Sidebar actors={actors} dispatch={dispatch} hfToken={hfToken} />
+        <Sidebar
+          actors={actors}
+          dispatch={dispatch}
+          hfToken={hfToken}
+          prompt={prompt}
+        />
       </div>
     </div>
   );

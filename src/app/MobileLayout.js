@@ -114,7 +114,12 @@ export default function MobileLayout({
         Settings
       </button>
       <div className={styles.settings}>
-        <Sidebar actors={actors} dispatch={dispatch} hfToken={hfToken} />
+        <Sidebar
+          actors={actors}
+          dispatch={dispatch}
+          hfToken={hfToken}
+          prompt={prompt}
+        />
       </div>
     </div>
   );

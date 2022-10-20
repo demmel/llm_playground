@@ -47,7 +47,7 @@ const useStyles = createUseStyles({
   },
 });
 
-export default function Sidebar({ actors, dispatch, hfToken }) {
+export default function Sidebar({ actors, dispatch, hfToken, prompt }) {
   const styles = useStyles();
   return (
     <div className={styles.root}>
