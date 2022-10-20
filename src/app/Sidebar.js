@@ -84,8 +84,9 @@ export default function Sidebar({ actors, dispatch, hfToken, prompt }) {
               hfToken,
               prompt,
             }).then((response) => {
-              navigator.clipboard.writeText(response);
-              window.alert("Copied summary to clipboard.");
+              navigator.clipboard.writeText(response).then(() => {
+                window.alert("Copied summary to clipboard.");
+              });
             })
           }
         >
