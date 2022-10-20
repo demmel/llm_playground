@@ -3,6 +3,8 @@ import appReducer from "./appReducer";
 import sendChatPrompt from "./sendChatPrompt";
 import nlp from "compromise";
 import DesktopLayout from "./DesktopLayout";
+import MobileLayout from "./MobileLayout";
+import { isMobile } from "react-device-detect";
 
 function getActorsForPrompt(prompt) {
   return nlp(prompt)
@@ -124,7 +126,17 @@ export default function App() {
     }
   }, [state.messages, state.scrollToBottom]);
 
-  return (
+  return isMobile ? (
+    <MobileLayout
+      actors={state.actors}
+      addActors={addActors}
+      dispatch={dispatch}
+      hfToken={state.hfToken}
+      prompt={state.prompt}
+      scrollRef={scrollRef}
+      waitingForReply={state.waitingForReply}
+    />
+  ) : (
     <DesktopLayout
       actors={state.actors}
       addActors={addActors}
