@@ -22,5 +22,10 @@ export default async function sendPrompt({ hfToken, prompt }) {
     }
   );
 
-  return response.json().then((response) => response[0].summary_text);
+  return response.json().then((response) => {
+    if (response.error != null) {
+      throw new Error(response.error);
+    }
+    return response[0].summary_text;
+  });
 }
