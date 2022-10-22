@@ -99,6 +99,11 @@ export default function Sidebar({
                   type="range"
                   min={param_def.min}
                   max={param_def.max}
+                  step={
+                    config_def.parameters[param_name].type === "float"
+                      ? 0.01
+                      : 1
+                  }
                   value={config.parameters[param_name]}
                   onChange={(e) => setParamValue(param_name, e.target.value)}
                 />

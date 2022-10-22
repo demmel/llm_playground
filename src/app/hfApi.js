@@ -31,7 +31,7 @@ export const CONFIGS = Object.freeze({
         default: 0.9,
       },
       repetition_penalty: {
-        type: "int",
+        type: "float",
         min: 0,
         max: 100,
         default: 60,
@@ -44,12 +44,12 @@ export const CONFIGS = Object.freeze({
       min_length: {
         type: "int",
         min: 0,
-        max: "max_length",
+        max: 512,
         default: 256,
       },
       max_length: {
         type: "int",
-        min: "min_length",
+        min: 0,
         max: 512,
         default: 512,
       },
@@ -74,10 +74,10 @@ export const CONFIGS = Object.freeze({
         default: 1.0,
       },
       repetition_penalty: {
-        type: "int",
-        min: 0,
+        type: "float",
+        min: 0.1,
         max: 100,
-        default: 0,
+        default: 0.1,
       },
     },
   },

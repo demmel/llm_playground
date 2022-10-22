@@ -54,15 +54,22 @@ export default function appReducer(state, action) {
         },
       };
     case "set_param":
+      const task = state.hfConfig.task;
+      const configs = state.hfConfig.configs;
+      const config = configs[task];
+      const parameters = config.parameters;
       return {
         ...state,
         hfConfig: {
           ...state.hfConfig,
           configs: {
-            ...state.hfConfig.configs,
-            [state.hfConfig.task]: {
-              ...state.hfConfig.configs[state.hfConfig.task],
-              [action.name]: action.value,
+            ...configs,
+            [task]: {
+              ...config,
+              parameters: {
+                ...parameters,
+                [action.name]: action.value,
+              },
             },
           },
         },

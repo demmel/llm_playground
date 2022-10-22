@@ -15,7 +15,7 @@ export default function App() {
     waitingForReply: false,
     scrollToBottom: false,
   });
-  console.log(state);
+  console.log(state.hfConfig.configs);
   const scrollRef = useRef(null);
 
   useEffect(() => {
