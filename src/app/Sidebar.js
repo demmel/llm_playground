@@ -1,7 +1,9 @@
 import { createUseStyles } from "react-jss";
 import sendSummarizationPrompt from "./sendSummarizationPrompt";
-import Well from "./Well";
 import ActorSettingsItem from "./ActorSettingsItem";
+import TextInput from "./TextInput";
+import Label from "./Label";
+import Button from "./Button";
 
 const useStyles = createUseStyles({
   root: {
@@ -11,40 +13,6 @@ const useStyles = createUseStyles({
     width: "100%",
     height: "100%",
   },
-  label: {
-    marginLeft: 8,
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 8,
-  },
-  labelFollowing: {
-    marginTop: 12,
-    marginLeft: 8,
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 8,
-  },
-  oneLineUnput: {
-    fontSize: 16,
-    backgroundColor: "#080808",
-    color: "#FFFFFF",
-    border: "none",
-    outline: "none",
-    width: "100%",
-  },
-  button: {
-    border: 0,
-    height: 32,
-    borderRadius: 12,
-    backgroundColor: "#4D4D4D",
-    color: "#FFFFFF",
-    "&:hover": {
-      backgroundColor: "#606060",
-    },
-    "&:active": {
-      backgroundColor: "#303030",
-    },
-  },
 });
 
 export default function Sidebar({ actors, dispatch, hfToken, prompt }) {
@@ -52,7 +20,7 @@ export default function Sidebar({ actors, dispatch, hfToken, prompt }) {
   return (
     <div className={styles.root}>
       <div>
-        <div className={styles.label}>Actors</div>
+        <Label text="Actors" />
         {Object.values(actors).map(({ name, color, stop }) => (
           <ActorSettingsItem
             key={name}
@@ -70,15 +38,13 @@ export default function Sidebar({ actors, dispatch, hfToken, prompt }) {
         ))}
       </div>
       <div>
-        <div className={styles.label}>Prompt Length: {prompt.length}</div>
-        <button
-          className={styles.button}
+        <Label text={`Prompt Length: ${prompt.length}`} />
+        <Button
+          label="Copy Prompt"
           onClick={() => navigator.clipboard.writeText(prompt)}
-        >
-          Copy Prompt
-        </button>
-        <button
-          className={styles.button}
+        />
+        <Button
+          label="Summarize Conversation"
           onClick={() =>
             sendSummarizationPrompt({
               hfToken,
@@ -91,20 +57,14 @@ export default function Sidebar({ actors, dispatch, hfToken, prompt }) {
               })
               .catch((e) => window.alert(e))
           }
-        >
-          Summarize Conversation
-        </button>
-        <div className={styles.labelFollowing}>Hugging Face Token</div>
-        <Well>
-          <input
-            className={styles.oneLineUnput}
-            type="text"
-            value={hfToken}
-            onChange={(e) =>
-              dispatch({ type: "update_hf_token", token: e.target.value })
-            }
-          />
-        </Well>
+        />
+        <TextInput
+          label="Hugging Face Token"
+          value={hfToken}
+          onChange={(e) =>
+            dispatch({ type: "update_hf_token", token: e.target.value })
+          }
+        />
       </div>
     </div>
   );
