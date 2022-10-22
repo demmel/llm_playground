@@ -60,6 +60,7 @@ const useStyles = createUseStyles({
 });
 
 export default function MobileLayout({
+  stopSequences,
   hfConfig,
   dispatch,
   hfToken,
@@ -113,6 +114,7 @@ export default function MobileLayout({
       </button>
       <div className={styles.settings}>
         <Sidebar
+          stopSequences={stopSequences}
           hfConfig={hfConfig}
           dispatch={dispatch}
           hfToken={hfToken}

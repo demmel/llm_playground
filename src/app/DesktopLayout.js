@@ -28,6 +28,7 @@ const useStyles = createUseStyles({
 });
 
 export default function DesktopLayout({
+  stopSequences,
   hfConfig,
   dispatch,
   hfToken,
@@ -63,6 +64,7 @@ export default function DesktopLayout({
       </div>
       <div className={styles.rightColumn}>
         <Sidebar
+          stopSequences={stopSequences}
           hfConfig={hfConfig}
           dispatch={dispatch}
           hfToken={hfToken}

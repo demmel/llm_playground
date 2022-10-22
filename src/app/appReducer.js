@@ -67,6 +67,11 @@ export default function appReducer(state, action) {
           },
         },
       };
+    case "set_stop_sequence":
+      return {
+        ...state,
+        stopSequences: action.stopSequences,
+      };
     default:
       throw new Error(
         `Action Type: ${action.type} does not have a handler defined`

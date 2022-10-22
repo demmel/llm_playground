@@ -35,7 +35,13 @@ const useStyles = createUseStyles({
   },
 });
 
-export default function Sidebar({ dispatch, hfToken, hfConfig, prompt }) {
+export default function Sidebar({
+  dispatch,
+  hfToken,
+  hfConfig,
+  prompt,
+  stopSequences,
+}) {
   const styles = useStyles();
   const config = hfConfig.configs[hfConfig.task];
   const config_def = CONFIGS[hfConfig.task];
@@ -100,6 +106,16 @@ export default function Sidebar({ dispatch, hfToken, hfConfig, prompt }) {
             </div>
           )
         )}
+        <TextInput
+          label="Stop Sequence"
+          value={stopSequences[0] ?? ""}
+          onChange={(e) =>
+            dispatch({
+              type: "set_stop_sequence",
+              stopSequences: e.target.value !== "" ? [e.target.value] : [],
+            })
+          }
+        />
       </div>
       <div>
         <Label text={`Prompt Length: ${prompt.length}`} />

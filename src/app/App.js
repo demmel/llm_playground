@@ -10,12 +10,12 @@ export default function App() {
   const [state, dispatch] = useReducer(appReducer, {
     hfToken: localStorage.getItem("hfToken") ?? "",
     hfConfig: getInitialState(),
-    actors: {},
     prompt: "",
+    stopSequences: [],
     waitingForReply: false,
     scrollToBottom: false,
   });
-  console.log(state.hfConfig);
+  console.log(state);
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -41,7 +41,7 @@ export default function App() {
       .then((response) => {
         switch (state.hfConfig.task) {
           case "generation":
-            return response[0].generated_text.slice(prompt.length);
+            return response[0].generated_text.slice(state.prompt.length);
           case "summarization":
             return response[0].summary_text;
           default:
@@ -51,6 +51,13 @@ export default function App() {
         }
       })
       .then((addendum) => {
+        const ssi = state.stopSequences
+          .map((ss) => addendum.indexOf(ss))
+          .filter((i) => i !== -1)
+          .reduce((a, b) => Math.min(a, b), Infinity);
+        if (ssi !== Infinity) {
+          addendum = addendum.slice(0, ssi);
+        }
         dispatch({ type: "receive_replies", prompt: state.prompt + addendum });
       })
       .catch((e) => {
@@ -62,6 +69,7 @@ export default function App() {
     state.hfConfig.task,
     state.hfToken,
     state.prompt,
+    state.stopSequences,
     state.waitingForReply,
   ]);
 
@@ -77,6 +85,7 @@ export default function App() {
 
   return isMobile ? (
     <MobileLayout
+      stopSequences={state.stopSequences}
       hfConfig={state.hfConfig}
       dispatch={dispatch}
       hfToken={state.hfToken}
@@ -86,6 +95,7 @@ export default function App() {
     />
   ) : (
     <DesktopLayout
+      stopSequences={state.stopSequences}
       hfConfig={state.hfConfig}
       dispatch={dispatch}
       hfToken={state.hfToken}
