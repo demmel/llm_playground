@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { createUseStyles } from "react-jss";
+import Button from "./Button";
 import Composer from "./Composer";
 import Sidebar from "./Sidebar";
 
@@ -8,50 +9,21 @@ const useStyles = createUseStyles({
     backgroundColor: "#121212",
     color: "#FFFFFF",
     width: "100%",
-    height: "100vh",
+    minHeight: "100vh",
     padding: 16,
     boxSizing: "border-box",
     display: "flex",
     flexDirection: "column",
   },
   composer: {
-    height: "100%",
+    display: "flex",
+    flexDirection: "column",
+    flexGrow: 1,
   },
-  button: {
-    border: 0,
-    height: 64,
-    fontSize: 24,
-    borderRadius: 12,
+  spacing: {
     marginTop: 16,
-    backgroundColor: "#4D4D4D",
-    color: "#FFFFFF",
-    "&:hover": {
-      backgroundColor: "#606060",
-    },
-    "&:active": {
-      backgroundColor: "#303030",
-    },
-    "&:disabled": {
-      backgroundColor: "#808080",
-    },
-  },
-  submitButton: {
-    border: 0,
-    height: 64,
-    fontSize: 24,
-    borderRadius: 12,
-    marginTop: 16,
-    backgroundColor: "#4D804d",
-    color: "#FFFFFF",
-    "&:hover": {
-      backgroundColor: "#608060",
-    },
-    "&:active": {
-      backgroundColor: "#306030",
-    },
-    "&:disabled": {
-      backgroundColor: "#808080",
-    },
+    display: "flex",
+    flexDirection: "column",
   },
   settings: {
     marginTop: 16,
@@ -99,19 +71,20 @@ export default function MobileLayout({
           onSubmit={sendPrompt}
         />
       </div>
-      <button
-        className={styles.submitButton}
-        disabled={sendDisabled}
-        onClick={sendPrompt}
-      >
-        Generate
-      </button>
-      <button
-        className={styles.button}
-        onClick={() => setShowSettings(!showSettings)}
-      >
-        Settings
-      </button>
+      <div className={styles.spacing}>
+        <Button
+          type="primary"
+          disabled={sendDisabled}
+          onClick={sendPrompt}
+          label="Generate"
+        />
+      </div>
+      <div className={styles.spacing}>
+        <Button
+          onClick={() => setShowSettings(!showSettings)}
+          label="Settings"
+        />
+      </div>
       <div className={styles.settings}>
         <Sidebar
           stopSequences={stopSequences}

@@ -9,7 +9,7 @@ const useStyles = createUseStyles({
   input: {
     alignSelf: "center",
     width: "100%",
-    height: "100%",
+    flexGrow: 1,
     backgroundColor: "#080808",
     color: "#FFFFFF",
     border: "none",

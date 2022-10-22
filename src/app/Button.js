@@ -43,10 +43,15 @@ const useStyles = createUseStyles({
   },
 });
 
-export default function Button({ type = "normal", label, onClick }) {
+export default function Button({
+  type = "normal",
+  label,
+  onClick,
+  disabled = false,
+}) {
   const styles = useStyles({ type });
   return (
-    <button className={styles.root} onClick={onClick}>
+    <button className={styles.root} onClick={onClick} disabled={disabled}>
       {label}
     </button>
   );

@@ -4,12 +4,12 @@ import { createUseStyles } from "react-jss";
 const useStyles = createUseStyles({
   root: {
     display: "flex",
+    flexDirection: "column",
+    flexGrow: 1,
     padding: 8,
     backgroundColor: ({ backgroundColor = "#080808" }) => backgroundColor,
     boxShadow: "inset 0 0 2px #191919",
     borderRadius: 16,
-    width: ({ width = "auto" }) => width,
-    height: ({ height = "auto" }) => height,
     boxSizing: "border-box",
   },
 });
