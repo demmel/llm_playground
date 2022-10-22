@@ -103,11 +103,16 @@ export default function App() {
     sendChatPrompt({
       hfToken: state.hfToken,
       prompt: state.prompt,
-    }).then((response) => {
-      const addendum = unpackResponse(response, state.actors);
-      addActors(addendum);
-      dispatch({ type: "receive_replies", prompt: state.prompt + addendum });
-    });
+    })
+      .then((response) => {
+        const addendum = unpackResponse(response, state.actors);
+        addActors(addendum);
+        dispatch({ type: "receive_replies", prompt: state.prompt + addendum });
+      })
+      .catch((e) => {
+        dispatch({ type: "receive_replies", prompt: state.prompt });
+        window.alert(e);
+      });
   }, [
     addActors,
     state.actors,

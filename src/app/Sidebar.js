@@ -83,11 +83,13 @@ export default function Sidebar({ actors, dispatch, hfToken, prompt }) {
             sendSummarizationPrompt({
               hfToken,
               prompt,
-            }).then((response) => {
-              navigator.clipboard.writeText(response).then(() => {
-                window.alert("Copied summary to clipboard.");
-              });
             })
+              .then((response) => {
+                navigator.clipboard.writeText(response).then(() => {
+                  window.alert("Copied summary to clipboard.");
+                });
+              })
+              .catch((e) => window.alert(e))
           }
         >
           Summarize Conversation
