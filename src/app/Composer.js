@@ -23,14 +23,10 @@ const useStyles = createUseStyles({
   },
 });
 
-export default function Composer({
-  ref,
-  text,
-  onChange,
-  placeholder,
-  disabled,
-  onSubmit,
-}) {
+export default React.forwardRef(function Composer(
+  { text, onChange, placeholder, disabled, onSubmit },
+  ref
+) {
   const styles = useStyles();
 
   const onKeyDown = useCallback(
@@ -57,4 +53,4 @@ export default function Composer({
       />
     </Well>
   );
-}
+});

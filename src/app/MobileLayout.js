@@ -60,8 +60,7 @@ const useStyles = createUseStyles({
 });
 
 export default function MobileLayout({
-  actors,
-  addActors,
+  hfConfig,
   dispatch,
   hfToken,
   prompt,
@@ -72,9 +71,8 @@ export default function MobileLayout({
   const styles = useStyles({ showSettings });
 
   const sendPrompt = useCallback(() => {
-    addActors(prompt);
     dispatch({ type: "send_prompt", prompt });
-  }, [addActors, dispatch, prompt]);
+  }, [dispatch, prompt]);
 
   const sendDisabled = waitingForReply || hfToken === "";
 
@@ -115,7 +113,7 @@ export default function MobileLayout({
       </button>
       <div className={styles.settings}>
         <Sidebar
-          actors={actors}
+          hfConfig={hfConfig}
           dispatch={dispatch}
           hfToken={hfToken}
           prompt={prompt}

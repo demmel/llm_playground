@@ -45,6 +45,28 @@ export default function appReducer(state, action) {
         ...state,
         prompt: action.prompt,
       };
+    case "set_task":
+      return {
+        ...state,
+        hfConfig: {
+          ...state.hfConfig,
+          task: action.task,
+        },
+      };
+    case "set_param":
+      return {
+        ...state,
+        hfConfig: {
+          ...state.hfConfig,
+          configs: {
+            ...state.hfConfig.configs,
+            [state.hfConfig.task]: {
+              ...state.hfConfig.configs[state.hfConfig.task],
+              [action.name]: action.value,
+            },
+          },
+        },
+      };
     default:
       throw new Error(
         `Action Type: ${action.type} does not have a handler defined`

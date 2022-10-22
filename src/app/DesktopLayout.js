@@ -28,8 +28,7 @@ const useStyles = createUseStyles({
 });
 
 export default function DesktopLayout({
-  actors,
-  addActors,
+  hfConfig,
   dispatch,
   hfToken,
   prompt,
@@ -58,14 +57,13 @@ export default function DesktopLayout({
               : "Set the scene.  What's the setting?  Who's involed?  What are their motivations?"
           }
           onSubmit={(prompt) => {
-            addActors(prompt);
             dispatch({ type: "send_prompt", prompt });
           }}
         />
       </div>
       <div className={styles.rightColumn}>
         <Sidebar
-          actors={actors}
+          hfConfig={hfConfig}
           dispatch={dispatch}
           hfToken={hfToken}
           prompt={prompt}
