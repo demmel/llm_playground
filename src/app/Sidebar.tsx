@@ -1,3 +1,7 @@
+import type { Config, Task, Parameters } from "./hfApi";
+import type { Action } from "./appReducer";
+
+import * as React from "react";
 import { createUseStyles } from "react-jss";
 import TextInput from "./TextInput";
 import Label from "./Label";
@@ -35,19 +39,27 @@ const useStyles = createUseStyles({
   },
 });
 
+type Props = {
+  dispatch: React.Dispatch<Action>;
+  hfToken: string;
+  hfConfig: Config;
+  prompt: string;
+  stopSequences: ReadonlyArray<string>;
+};
+
 export default function Sidebar({
   dispatch,
   hfToken,
   hfConfig,
   prompt,
   stopSequences,
-}) {
+}: Props) {
   const styles = useStyles();
   const config = hfConfig.configs[hfConfig.task];
   const config_def = CONFIGS[hfConfig.task];
 
   const setParamValue = useCallback(
-    (name, rawValue) => {
+    (name: keyof Parameters<Task>, rawValue: string) => {
       const value = (function () {
         switch (config_def.parameters[name].type) {
           case "int":
@@ -75,7 +87,7 @@ export default function Sidebar({
           onChange={(task) =>
             dispatch({
               type: "set_task",
-              task: task.value,
+              task: task.value as Task,
             })
           }
           value={hfConfig.task}
@@ -88,8 +100,15 @@ export default function Sidebar({
                 {param_name}
                 <div className={styles.paramInput}>
                   <TextInput
-                    value={config.parameters[param_name]}
-                    onChange={(e) => setParamValue(param_name, e.target.value)}
+                    value={String(
+                      config.parameters[param_name as keyof Parameters<Task>]
+                    )}
+                    onChange={(e) =>
+                      setParamValue(
+                        param_name as keyof Parameters<Task>,
+                        e.target.value
+                      )
+                    }
                   />
                 </div>
               </div>
@@ -100,12 +119,20 @@ export default function Sidebar({
                   min={param_def.min}
                   max={param_def.max}
                   step={
-                    config_def.parameters[param_name].type === "float"
+                    config_def.parameters[param_name as keyof Parameters<Task>]
+                      .type === "float"
                       ? 0.01
                       : 1
                   }
-                  value={config.parameters[param_name]}
-                  onChange={(e) => setParamValue(param_name, e.target.value)}
+                  value={
+                    config.parameters[param_name as keyof Parameters<Task>]
+                  }
+                  onChange={(e) =>
+                    setParamValue(
+                      param_name as keyof Parameters<Task>,
+                      e.target.value
+                    )
+                  }
                 />
               )}
             </div>

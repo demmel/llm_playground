@@ -1,3 +1,5 @@
+import * as React from "react";
+
 import { createUseStyles } from "react-jss";
 
 const useStyles = createUseStyles({
@@ -9,7 +11,11 @@ const useStyles = createUseStyles({
   },
 });
 
-export default function Label({ text }) {
+type Props = {
+  text: string;
+};
+
+export default function Label({ text }: Props) {
   const styles = useStyles();
   return <div className={styles.label}>{text}</div>;
 }

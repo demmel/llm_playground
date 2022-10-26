@@ -1,10 +1,13 @@
+import * as React from "react";
 import { useCallback, useState } from "react";
 import { createUseStyles } from "react-jss";
+import { Action } from "./appReducer";
 import Button from "./Button";
 import Composer from "./Composer";
+import { Config } from "./hfApi";
 import Sidebar from "./Sidebar";
 
-const useStyles = createUseStyles({
+const useStyles = createUseStyles<string, { showSettings: boolean }>({
   root: {
     backgroundColor: "#121212",
     color: "#FFFFFF",
@@ -31,6 +34,16 @@ const useStyles = createUseStyles({
   },
 });
 
+type Props = {
+  stopSequences: ReadonlyArray<string>;
+  hfConfig: Config;
+  dispatch: React.Dispatch<Action>;
+  hfToken: string;
+  prompt: string;
+  scrollRef: React.RefObject<HTMLTextAreaElement>;
+  waitingForReply: boolean;
+};
+
 export default function MobileLayout({
   stopSequences,
   hfConfig,
@@ -39,7 +52,7 @@ export default function MobileLayout({
   prompt,
   scrollRef,
   waitingForReply,
-}) {
+}: Props) {
   const [showSettings, setShowSettings] = useState(false);
   const styles = useStyles({ showSettings });
 

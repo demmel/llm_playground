@@ -83,28 +83,48 @@ export const CONFIGS = Object.freeze({
   },
 });
 
-export function getInitialState() {
+export type Task = keyof typeof CONFIGS;
+export type Configs = {
+  [K in Task]: {
+    model: typeof CONFIGS[K]["model"];
+    parameters: Parameters<K>;
+  };
+};
+export type Parameters<K extends Task> = {
+  [P in keyof typeof CONFIGS[K]["parameters"]]: number;
+};
+export type Config = {
+  task: Task;
+  configs: Configs;
+};
+
+export function getInitialState(): Config {
   return {
     task: "generation",
     configs: {
-      ...Object.entries(CONFIGS).reduce(
-        (task_configs, [take_name, task_config_def]) => {
-          task_configs[take_name] = {
-            model: task_config_def.model,
-            parameters: {
-              ...Object.entries(task_config_def.parameters).reduce(
-                (parameters, [param_name, param_def]) => {
-                  parameters[param_name] = param_def.default;
-                  return parameters;
-                },
-                {}
-              ),
-            },
-          };
-          return task_configs;
+      generation: {
+        model: CONFIGS.generation.model,
+        parameters: {
+          max_new_tokens: CONFIGS.generation.parameters.max_new_tokens.default,
+          temperature: CONFIGS.generation.parameters.temperature.default,
+          top_k: CONFIGS.generation.parameters.top_k.default,
+          top_p: CONFIGS.generation.parameters.top_p.default,
+          repetition_penalty:
+            CONFIGS.generation.parameters.repetition_penalty.default,
         },
-        {}
-      ),
+      },
+      summarization: {
+        model: CONFIGS.summarization.model,
+        parameters: {
+          min_length: CONFIGS.summarization.parameters.min_length.default,
+          max_length: CONFIGS.summarization.parameters.max_length.default,
+          temperature: CONFIGS.summarization.parameters.temperature.default,
+          top_k: CONFIGS.summarization.parameters.top_k.default,
+          top_p: CONFIGS.summarization.parameters.top_p.default,
+          repetition_penalty:
+            CONFIGS.summarization.parameters.repetition_penalty.default,
+        },
+      },
     },
   };
 }
@@ -116,18 +136,25 @@ const stringify = StringifyWithFloats(
       ...Object.entries(task_config_def.parameters).reduce(
         (parameters, [param_name, param_def]) => {
           if (param_def.type === "float") {
-            parameters[param_name] = "float";
+            parameters[param_name as keyof Parameters<Task>] = "float";
           }
           return parameters;
         },
-        {}
+        {} as { [_: string]: string }
       ),
     };
     return params;
   }, {})
 );
 
-export async function send({ hfToken, task, config, prompt }) {
+type Props = {
+  hfToken: string;
+  task: Task;
+  config: Configs[Task];
+  prompt: string;
+};
+
+export async function send({ hfToken, task, config, prompt }: Props) {
   const model = config.model;
 
   Object.entries(CONFIGS[task].parameters);

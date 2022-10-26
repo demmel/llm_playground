@@ -1,3 +1,4 @@
+import * as React from "react";
 import { createUseStyles } from "react-jss";
 import { isMobile } from "react-device-detect";
 
@@ -22,7 +23,9 @@ const BUTTON_TYPES = Object.freeze({
   },
 });
 
-const useStyles = createUseStyles({
+type ButtonType = keyof typeof BUTTON_TYPES;
+
+const useStyles = createUseStyles<string, { type: ButtonType }>({
   root: {
     border: 0,
     height: isMobile ? 64 : 32,
@@ -43,12 +46,19 @@ const useStyles = createUseStyles({
   },
 });
 
+type Props = {
+  type?: ButtonType;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+};
+
 export default function Button({
   type = "normal",
   label,
   onClick,
   disabled = false,
-}) {
+}: Props) {
   const styles = useStyles({ type });
   return (
     <button className={styles.root} onClick={onClick} disabled={disabled}>

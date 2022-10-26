@@ -1,3 +1,4 @@
+import * as React from "react";
 import { createUseStyles } from "react-jss";
 import Well from "./Well";
 import Label from "./Label";
@@ -13,7 +14,13 @@ const useStyles = createUseStyles({
   },
 });
 
-export default function TextInput({ label, value, onChange }) {
+type Props = {
+  label?: string;
+  value: string;
+  onChange: React.ChangeEventHandler<HTMLInputElement>;
+};
+
+export default function TextInput({ label, value, onChange }: Props) {
   const styles = useStyles();
   return (
     <div>

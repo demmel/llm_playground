@@ -1,7 +1,7 @@
 import * as React from "react";
 import { createUseStyles } from "react-jss";
 
-const useStyles = createUseStyles({
+const useStyles = createUseStyles<string, { backgroundColor?: string }>({
   root: {
     display: "flex",
     flexDirection: "column",
@@ -14,7 +14,12 @@ const useStyles = createUseStyles({
   },
 });
 
-export default function Well({ children, ...props }) {
+type Props = {
+  children: React.ReactNode;
+  backgroundColor?: string;
+};
+
+export default function Well({ children, ...props }: Props) {
   const styles = useStyles(props);
   return <div className={styles.root}>{children}</div>;
 }

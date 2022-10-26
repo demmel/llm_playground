@@ -1,5 +1,8 @@
+import * as React from "react";
 import { createUseStyles } from "react-jss";
+import { Action } from "./appReducer";
 import Composer from "./Composer";
+import { Config } from "./hfApi";
 import Sidebar from "./Sidebar";
 
 const useStyles = createUseStyles({
@@ -27,6 +30,16 @@ const useStyles = createUseStyles({
   },
 });
 
+type Props = {
+  stopSequences: ReadonlyArray<string>;
+  hfConfig: Config;
+  dispatch: React.Dispatch<Action>;
+  hfToken: string;
+  prompt: string;
+  scrollRef: React.RefObject<HTMLTextAreaElement>;
+  waitingForReply: boolean;
+};
+
 export default function DesktopLayout({
   stopSequences,
   hfConfig,
@@ -35,7 +48,7 @@ export default function DesktopLayout({
   prompt,
   scrollRef,
   waitingForReply,
-}) {
+}: Props) {
   const styles = useStyles();
 
   return (

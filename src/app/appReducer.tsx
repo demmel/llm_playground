@@ -1,4 +1,29 @@
-export default function appReducer(state, action) {
+import type { Task, Config, Configs } from "./hfApi";
+
+type State = {
+  hfToken: string;
+  hfConfig: Config;
+  prompt: string;
+  stopSequences: ReadonlyArray<string>;
+  waitingForReply: boolean;
+  scrollToBottom: boolean;
+};
+
+export type Action =
+  | { type: "update_hf_token"; token: string }
+  | { type: "send_prompt"; prompt: string }
+  | { type: "receive_replies"; prompt: string }
+  | { type: "finish_scroll" }
+  | { type: "set_prompt"; prompt: string }
+  | { type: "set_task"; task: Task }
+  | {
+      type: "set_param";
+      name: keyof Configs[Task]["parameters"];
+      value: number;
+    }
+  | { type: "set_stop_sequence"; stopSequences: ReadonlyArray<string> };
+
+export default function appReducer(state: State, action: Action): State {
   switch (action.type) {
     case "update_hf_token":
       return {
@@ -23,22 +48,6 @@ export default function appReducer(state, action) {
       return {
         ...state,
         scrollToBottom: false,
-      };
-    case "add_actors":
-      return {
-        ...state,
-        actors: {
-          ...state.actors,
-          ...action.actors,
-        },
-      };
-    case "set_actor_props":
-      return {
-        ...state,
-        actors: {
-          ...state.actors,
-          [action.actor]: action.props,
-        },
       };
     case "set_prompt":
       return {
@@ -79,9 +88,5 @@ export default function appReducer(state, action) {
         ...state,
         stopSequences: action.stopSequences,
       };
-    default:
-      throw new Error(
-        `Action Type: ${action.type} does not have a handler defined`
-      );
   }
 }

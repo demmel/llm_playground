@@ -1,3 +1,4 @@
+import * as React from "react";
 import { useEffect, useReducer, useRef } from "react";
 import appReducer from "./appReducer";
 import { send } from "./hfApi";
@@ -15,7 +16,7 @@ export default function App() {
     waitingForReply: false,
     scrollToBottom: false,
   });
-  const scrollRef = useRef(null);
+  const scrollRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     localStorage.setItem("hfToken", state.hfToken);
@@ -43,10 +44,6 @@ export default function App() {
             return response[0].generated_text.slice(state.prompt.length);
           case "summarization":
             return response[0].summary_text;
-          default:
-            throw new Error(
-              `Don't know how to handle response for task: ${state.hfConfig.task}`
-            );
         }
       })
       .then((addendum) => {
@@ -80,7 +77,7 @@ export default function App() {
     if (scrollRef.current !== null) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [state.messages, state.scrollToBottom]);
+  }, [state.scrollToBottom]);
 
   return isMobile ? (
     <MobileLayout

@@ -23,24 +23,33 @@ const useStyles = createUseStyles({
   },
 });
 
-export default React.forwardRef(function Composer(
-  { text, onChange, placeholder, disabled, onSubmit },
+type Props = {
+  text: string;
+  onChange: React.ChangeEventHandler<HTMLTextAreaElement>;
+  placeholder: string;
+  disabled: boolean;
+  onSubmit: (_: string) => void;
+};
+
+export default React.forwardRef<HTMLTextAreaElement, Props>(function Composer(
+  { text, onChange, placeholder, disabled, onSubmit }: Props,
   ref
 ) {
   const styles = useStyles();
 
-  const onKeyDown = useCallback(
-    function (event) {
-      if (event.key === "Enter" && event.getModifierState("Shift")) {
-        event.preventDefault();
-        onSubmit(text);
-      }
-    },
-    [onSubmit, text]
-  );
+  const onKeyDown: React.KeyboardEventHandler<HTMLTextAreaElement> =
+    useCallback(
+      function (event) {
+        if (event.key === "Enter" && event.getModifierState("Shift")) {
+          event.preventDefault();
+          onSubmit(text);
+        }
+      },
+      [onSubmit, text]
+    );
 
   return (
-    <Well height="100%" backgroundColor={disabled ? DISABLED_COLOR : undefined}>
+    <Well backgroundColor={disabled ? DISABLED_COLOR : undefined}>
       <textarea
         ref={ref}
         autoFocus={true}
